@@ -2,46 +2,36 @@
 // Created by justd on 9/20/2023.
 //
 
-
 #include "Course.h"
-
 
 Course::Course() {
 
-
 }
-
 
 Course::Course(string code, string title) : code(code), title(title) {
     eList = NULL;
     wList = NULL;
 }
 
-
 string Course::getCode() {
     return code;
 }
-
 
 string Course::getTitle() {
     return title;
 }
 
-
 int Course::getEnrolled() {
     return enrolled;
 }
-
 
 node *Course::getElist() {
     return eList;
 }
 
-
 int Course::getWaitlist() {
     return waitlist;
 }
-
 
 node *Course::getWlist() {
     return wList;
@@ -50,7 +40,6 @@ node *Course::getWlist() {
 void Course::setCode(string _code) {
     code = _code;
 }
-
 
 void Course::setTitle(string _title) {
     title = _title;
@@ -180,7 +169,6 @@ void Course::setElist(node *_elist) {
         iter = iter->getLink();
     }
 }
-
 
 void Course::setWlist(node *_wlist) {
     //Sets a new head

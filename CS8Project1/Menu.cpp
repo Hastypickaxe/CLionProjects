@@ -2,9 +2,7 @@
 // Created by Kevin on 9/25/2023.
 //
 
-
 #include "Menu.h"
-
 
 Menu::Menu() {
     string filenameCourse = "courses.txt";
@@ -73,7 +71,6 @@ Menu::Menu() {
 
     enrollmentFile.close();
 }
-
 
 void Menu::run() {
     string inputStr;
