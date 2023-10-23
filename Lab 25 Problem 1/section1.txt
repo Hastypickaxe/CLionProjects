@@ -1,0 +1,8 @@
+4 Alice 90
+8 Bob 88
+12 Cindy 74
+13 Peter 91
+5 Ellie 95
+2 Sunny 80
+1 Sally 82
+19 Victor 77

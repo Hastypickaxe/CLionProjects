@@ -1,0 +1,20 @@
+M Paul 6 80 90
+H Eve 10 polo
+H Harry 11 band
+M Oliver 7 82 79
+H Tammy 10 band
+M Erin 8 70 80
+M Sue 7 79 82
+H Pam 11 soccer
+M Eric 7 60 68
+H Alice 10 swimming
+H Cindy 10 soccer
+M Tom 8 89 93
+H Hailey 10 swimming
+H Ara 9 wrestling
+H Sally 9 band
+M Jennifer 8 79 81
+H Peter 9 polo
+H Jenny 11 band
+M Brian 6 82 71
+H Robert 12 polo
