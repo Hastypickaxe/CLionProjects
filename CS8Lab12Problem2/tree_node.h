@@ -1,4 +1,3 @@
-
 #ifndef TREE_CS008_H
 #define TREE_CS008_H
 #include <iostream>
@@ -39,8 +38,14 @@ private:
     binary_tree_node* right_field;
 };
 template <class Item>
-size_t tree_size(const binary_tree_node<Item>* node_ptr)
-{
-// Complete function
+size_t tree_size(const binary_tree_node<Item>* node_ptr) {
+    if (node_ptr == nullptr) {
+        return 0;
+    } else {
+        // Calculate the size recursively by adding the size of the left and right subtrees
+        size_t left_size = tree_size(node_ptr->left());
+        size_t right_size = tree_size(node_ptr->right());
+        return 1 + left_size + right_size; // 1 for the current node
+    }
 }
 #endif
