@@ -16,6 +16,34 @@ public:
     TreeNode(string val) : value(val), left_child(nullptr), right_child(nullptr) {}
 };
 
+void buildBinaryTree(const string& filename, char tree[], const int size) {
+    ifstream inputFile(filename);
+    if(!inputFile.is_open()) {
+        cout << "Error: Could not open file" << endl;
+        return;
+    }
+
+    char parentVal, leftVal, rightVal;
+    int index = 0;
+
+    while (inputFile >> parentVal >> leftVal >> rightVal) {
+        bool found = false;
+        for (int i = 0; i < size; ++i) {
+            if(tree[i] == parentVal) {
+                found = true;
+
+                break;
+            }
+        }
+        if(!found) {
+            tree[index++] = parentVal;
+        }
+
+        tree[index++] = leftVal;
+        tree[index++] = rightVal;
+    }
+}
+
 TreeNode* buildBinaryTree(const string& filename, map<string, TreeNode*>& nodeMap) {
     ifstream inputFile(filename);
     if(!inputFile.is_open()) {
@@ -76,6 +104,11 @@ string findParent(const map<string, TreeNode*>& nodeMap, const string& target) {
     return "Not Found";
 }
 
+void displayTreeInArrayFormat(char tree[], const int size) {
+    for (int i = 0; i < size; ++i) {
+        cout << i << " | " << tree[i] << endl;
+    }
+}
 void displayTreeInArrayFormat(const map<string, TreeNode*>& nodeMap, TreeNode* node, int depth, vector<string>& output) {
     if (node == NULL) {
         return;
@@ -94,40 +127,46 @@ int main() {
     map<string, TreeNode*> nodeMap;
     TreeNode* root = buildBinaryTree(filename, nodeMap);
 
-    if (root) {
-        vector<string> treeOutput;
-        displayTreeInArrayFormat(nodeMap, root, 0, treeOutput);
+    const int MAX = 100;
+    char tree[MAX] = {0};
 
-        size_t maxWidth = 0;
-        for (const string &line: treeOutput) {
-            maxWidth = max(maxWidth, line.length());
-        }
+    buildBinaryTree(filename, tree, MAX);
+    displayTreeInArrayFormat(tree, MAX);
 
-//        cout << "<Binary tree in array>" << endl;
-//        for (size_t i = 0; i < treeOutput.size(); i++) {
-//            cout << setw(maxWidth) << right << treeOutput[i] << endl;
+//    if (root) {
+//        vector<string> treeOutput;
+//        displayTreeInArrayFormat(nodeMap, root, 0, treeOutput);
+//
+//        size_t maxWidth = 0;
+//        for (const string &line: treeOutput) {
+//            maxWidth = max(maxWidth, line.length());
 //        }
-
-        char more;
-        do {
-            cout << "Find the parent of the node" << endl;
-            cout << "Enter data: ";
-            string data;
-            cin >> data;
-
-            string parent = findParent(nodeMap, data);
-            cout << "The parent of " << data << " is " << parent << endl;
-
-            cout << "More(y/n)? : ";
-            cin >> more;
-        } while (more == 'y' || more == 'Y');
-    }else {
-        cout << "Failed to create the binary tree." << endl;
-    }
-
-    for (auto& entry : nodeMap) {
-        delete entry.second;
-    }
+//
+////        cout << "<Binary tree in array>" << endl;
+////        for (size_t i = 0; i < treeOutput.size(); i++) {
+////            cout << setw(maxWidth) << right << treeOutput[i] << endl;
+////        }
+//
+//        char more;
+//        do {
+//            cout << "Find the parent of the node" << endl;
+//            cout << "Enter data: ";
+//            string data;
+//            cin >> data;
+//
+//            string parent = findParent(nodeMap, data);
+//            cout << "The parent of " << data << " is " << parent << endl;
+//
+//            cout << "More(y/n)? : ";
+//            cin >> more;
+//        } while (more == 'y' || more == 'Y');
+//    }else {
+//        cout << "Failed to create the binary tree." << endl;
+//    }
+//
+//    for (auto& entry : nodeMap) {
+//        delete entry.second;
+//    }
 
     return 0;
 }
