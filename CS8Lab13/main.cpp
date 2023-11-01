@@ -26,7 +26,11 @@ public:
     }
 
     int height() const {
-        return height(root);
+        if (root == NULL) {
+            return 0;
+        }
+
+        return height(root) - 1;
     }
 
     int size() const {
@@ -35,7 +39,7 @@ public:
 
     int search(const Item& value) const {
         int level = 1;  // Initialize level to 1
-        return search(root, value, level);
+        return search(root, value, level) - 1;
     }
 
 private:
@@ -81,7 +85,7 @@ private:
         }
         int left_height = height(node->left());
         int right_height = height(node->right());
-        return 1 + max(left_height, right_height);
+        return max(left_height, right_height) + 1;
     }
 
     int size(const binary_tree_node<Item>* node) const {
@@ -96,11 +100,16 @@ private:
             return -1;  // Value not found
         }
         if (value == node->data()) {
+            level--;
+
+            cout << value << " is at level " << level;
+
             if (node->is_leaf()) {
-                cout << value << " is at level " << level << " and " << value << " is a leaf node" << endl;
-            } else {
-                cout << value << " is at level " << level << endl;
+                cout << " and " << value << " is a leaf node";
             }
+
+            cout << endl;
+
             return level;  // Value found at this level
         }
         if (value < node->data()) {
@@ -124,15 +133,15 @@ int main() {
 
         cout << "The traversal results" << endl;
 
-        cout << "Preorder Traversal: ";
+        cout << "Preorder Traversal  : ";
         bst.preorder_traversal();
         cout << endl;
 
-        cout << "Inorder Traversal: ";
+        cout << "Inorder Traversal   : ";
         bst.inorder_traversal();
         cout << endl;
 
-        cout << "Postorder Traversal: ";
+        cout << "Postorder Traversal : ";
         bst.postorder_traversal();
         cout << endl;
 

@@ -123,7 +123,6 @@ int main() {
     infile.close();
     cout << "Original BST: ";
     bst.display();
-    char choice;
 
     do {
 
@@ -141,10 +140,7 @@ int main() {
         cout << "After deleting " << delete_key << " : ";
         cout << endl;
         bst.display();
-
-        cout << "Do you want to continue (y/n): ";
-        cin >> choice;
-    } while (choice != 'n' && choice != 'N');
+    } while (true);
 
     return 0;
 }
