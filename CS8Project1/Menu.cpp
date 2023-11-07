@@ -135,7 +135,7 @@ void Menu::menu1() {
         //Loops through the enroll list first if student not found then loops waitlist
         while (enrolledList != NULL || waitList != NULL) {
             if (enrolledList != NULL && enrolledList->getData().getId() == id) {
-                cout << "(R) " << courses[i].getCode() << " - " << courses[i].getTitle() << endl;
+                cout << "(E) " << courses[i].getCode() << " - " << courses[i].getTitle() << endl;
                 found = true;
             }
             if (waitList != NULL && waitList->getData().getId() == id) {

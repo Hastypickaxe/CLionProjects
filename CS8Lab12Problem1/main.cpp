@@ -1,22 +1,46 @@
 #include <iostream>
-#include <vector>
-#include <iomanip>
 #include <string>
-#include <map>
 #include <fstream>
 
 using namespace std;
 
-class TreeNode {
-public:
-    string value;
-    TreeNode* left_child;
-    TreeNode* right_child;
+void findParent(char tree[], const int size) {
+    char n, response;
 
-    TreeNode(string val) : value(val), left_child(nullptr), right_child(nullptr) {}
-};
+    cout << "Find the parent of a node" << endl;
 
-void buildBinaryTree(const string& filename, char tree[], const int size) {
+    do {
+        cout << "Enter data : ";
+        cin >> n;
+
+        int i = 0;
+        bool found = false;
+
+        for (; i < size; ++i) {
+            if (tree[i] == n) {
+                found = true;
+                break;
+            }
+        }
+
+        if (found) {
+            if (i == 0) {
+                cout << n << " is root" << endl;
+            } else {
+                int parent = (i - 1) / 2;
+                cout << "The parent of " << n << " is " << tree[parent] << endl;
+            }
+        } else {
+            cout << n << " does not exist in the tree" << endl;
+        }
+
+        cout << "more (y/n) ? ";
+        cin >> response;
+    } while (response == 'y' || response == 'Y');
+
+}
+
+void buildBinaryTree(const string& filename, char tree[], const int size, int & newSize) {
     ifstream inputFile(filename);
     if(!inputFile.is_open()) {
         cout << "Error: Could not open file" << endl;
@@ -39,69 +63,37 @@ void buildBinaryTree(const string& filename, char tree[], const int size) {
             tree[index++] = parentVal;
         }
 
+        while (tree[index] == 'Z') {
+            index++;
+        }
+
         tree[index++] = leftVal;
         tree[index++] = rightVal;
-    }
-}
 
-TreeNode* buildBinaryTree(const string& filename, map<string, TreeNode*>& nodeMap) {
-    ifstream inputFile(filename);
-    if(!inputFile.is_open()) {
-        cout << "Error: Could not open file" << endl;
-        return nullptr;
-    }
+        if (leftVal == 'Z') {
+            int leftChild = (index - 2) * 2 + 1;
+            int rightChild = leftChild + 1;
 
-    string parentVal, leftVal, rightVal;
-    TreeNode* root = nullptr;
-
-    while (inputFile >> parentVal >> leftVal >> rightVal) {
-        TreeNode* parentNode;
-        if (nodeMap.find(parentVal) == nodeMap.end()) {
-            parentNode = new TreeNode(parentVal);
-            nodeMap[parentVal] = parentNode;
-        } else {
-            parentNode = nodeMap[parentVal];
+            tree[leftChild] = 'Z';
+            tree[rightChild] = 'Z';
         }
 
-        if (leftVal != "Z" ) {
-            TreeNode* leftNode;
-            if (nodeMap.find(leftVal) == nodeMap.end()) {
-                leftNode = new TreeNode(leftVal);
-                nodeMap[leftVal] = leftNode;
-            }
-            parentNode->left_child = leftNode;
-        }
+        if (rightVal == 'Z') {
+            int leftChild = (index - 1) * 2 + 1;
+            int rightChild = leftChild + 1;
 
-        if (rightVal != "Z" ) {
-            TreeNode* rightNode;
-            if (nodeMap.find(rightVal) == nodeMap.end()) {
-                rightNode = new TreeNode(rightVal);
-                nodeMap[rightVal] = rightNode;
-            } else {
-                rightNode = nodeMap[rightVal];
-            }
-            parentNode->right_child = rightNode;
-        }
-
-        if (root == nullptr) {
-            root = parentNode;
+            tree[leftChild] = 'Z';
+            tree[rightChild] = 'Z';
         }
     }
 
-    inputFile.close();
-    return root;
-}
-
-string findParent(const map<string, TreeNode*>& nodeMap, const string& target) {
-    for (const auto& entry : nodeMap) {
-        if (entry.second->left_child && entry.second->left_child->value == target) {
-            return entry.first;
-        }
-        if (entry.second->right_child && entry.second->right_child->value == target) {
-            return entry.first;
+    for (int i = 0; i < size; ++i) {
+        if (tree[i] == 'Z') {
+            tree[i] = '\0';
         }
     }
-    return "Not Found";
+
+    newSize = index;
 }
 
 void displayTreeInArrayFormat(char tree[], const int size) {
@@ -109,64 +101,17 @@ void displayTreeInArrayFormat(char tree[], const int size) {
         cout << i << " | " << tree[i] << endl;
     }
 }
-void displayTreeInArrayFormat(const map<string, TreeNode*>& nodeMap, TreeNode* node, int depth, vector<string>& output) {
-    if (node == NULL) {
-        return;
-    }
-    string line = to_string(depth) + " | " + node->value;
-    output.push_back(line);
-
-    cout << depth << " | " << node->value << endl;
-    displayTreeInArrayFormat(nodeMap, node->left_child, depth + 1, output);
-    displayTreeInArrayFormat(nodeMap, node->right_child, depth + 1, output);
-
-}
 
 int main() {
     const string filename = "tree.txt";
-    map<string, TreeNode*> nodeMap;
-    TreeNode* root = buildBinaryTree(filename, nodeMap);
 
     const int MAX = 100;
     char tree[MAX] = {0};
+    int size = 0;
 
-    buildBinaryTree(filename, tree, MAX);
-    displayTreeInArrayFormat(tree, MAX);
-
-//    if (root) {
-//        vector<string> treeOutput;
-//        displayTreeInArrayFormat(nodeMap, root, 0, treeOutput);
-//
-//        size_t maxWidth = 0;
-//        for (const string &line: treeOutput) {
-//            maxWidth = max(maxWidth, line.length());
-//        }
-//
-////        cout << "<Binary tree in array>" << endl;
-////        for (size_t i = 0; i < treeOutput.size(); i++) {
-////            cout << setw(maxWidth) << right << treeOutput[i] << endl;
-////        }
-//
-//        char more;
-//        do {
-//            cout << "Find the parent of the node" << endl;
-//            cout << "Enter data: ";
-//            string data;
-//            cin >> data;
-//
-//            string parent = findParent(nodeMap, data);
-//            cout << "The parent of " << data << " is " << parent << endl;
-//
-//            cout << "More(y/n)? : ";
-//            cin >> more;
-//        } while (more == 'y' || more == 'Y');
-//    }else {
-//        cout << "Failed to create the binary tree." << endl;
-//    }
-//
-//    for (auto& entry : nodeMap) {
-//        delete entry.second;
-//    }
+    buildBinaryTree(filename, tree, MAX, size);
+    displayTreeInArrayFormat(tree, size);
+    findParent(tree, size);
 
     return 0;
 }
