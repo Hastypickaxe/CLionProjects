@@ -1,4 +1,5 @@
 #include <iostream>
+<<<<<<< HEAD
 #include <fstream>
 #include <string>
 #include <map>
@@ -20,6 +21,50 @@ public:
 
 <<<<<<< Updated upstream
 void buildBinaryTree(const string& filename, char tree[], const int size) {
+=======
+#include <string>
+#include <fstream>
+
+using namespace std;
+
+void findParent(char tree[], const int size) {
+    char n, response;
+
+    cout << "Find the parent of a node" << endl;
+
+    do {
+        cout << "Enter data : ";
+        cin >> n;
+
+        int i = 0;
+        bool found = false;
+
+        for (; i < size; ++i) {
+            if (tree[i] == n) {
+                found = true;
+                break;
+            }
+        }
+
+        if (found) {
+            if (i == 0) {
+                cout << n << " is root" << endl;
+            } else {
+                int parent = (i - 1) / 2;
+                cout << "The parent of " << n << " is " << tree[parent] << endl;
+            }
+        } else {
+            cout << n << " does not exist in the tree" << endl;
+        }
+
+        cout << "more (y/n) ? ";
+        cin >> response;
+    } while (response == 'y' || response == 'Y');
+
+}
+
+void buildBinaryTree(const string& filename, char tree[], const int size, int & newSize) {
+>>>>>>> 9cbaefa43765d8448e57a98233bfc159a521ec1c
     ifstream inputFile(filename);
     if(!inputFile.is_open()) {
         cout << "Error: Could not open file" << endl;
@@ -42,11 +87,14 @@ void buildBinaryTree(const string& filename, char tree[], const int size) {
             tree[index++] = parentVal;
         }
 
+        while (tree[index] == 'Z') {
+            index++;
+        }
+
         tree[index++] = leftVal;
         tree[index++] = rightVal;
-    }
-}
 
+<<<<<<< HEAD
 TreeNode* buildBinaryTree(const string& filename, map<string, TreeNode*>& nodeMap) {
 =======
 // Function to build a binary tree from the data in a file
@@ -57,19 +105,17 @@ TreeNode* buildBinaryTreeFromFile(const string& filename, map<string, TreeNode*>
         cerr << "Error: Could not open the file." << endl;
         return nullptr;
     }
+=======
+        if (leftVal == 'Z') {
+            int leftChild = (index - 2) * 2 + 1;
+            int rightChild = leftChild + 1;
+>>>>>>> 9cbaefa43765d8448e57a98233bfc159a521ec1c
 
-    string parentVal, leftVal, rightVal;
-    TreeNode* root = nullptr;
-
-    while (inputFile >> parentVal >> leftVal >> rightVal) {
-        TreeNode* parentNode;
-        if (nodeMap.find(parentVal) == nodeMap.end()) {
-            parentNode = new TreeNode(parentVal);
-            nodeMap[parentVal] = parentNode;
-        } else {
-            parentNode = nodeMap[parentVal];
+            tree[leftChild] = 'Z';
+            tree[rightChild] = 'Z';
         }
 
+<<<<<<< HEAD
         if (leftVal != "Z") {
             TreeNode* leftNode;
             if (nodeMap.find(leftVal) == nodeMap.end()) {
@@ -113,6 +159,24 @@ string findParent(const map<string, TreeNode*>& nodeMap, const string& target) {
         }
     }
     return "Not found";
+=======
+        if (rightVal == 'Z') {
+            int leftChild = (index - 1) * 2 + 1;
+            int rightChild = leftChild + 1;
+
+            tree[leftChild] = 'Z';
+            tree[rightChild] = 'Z';
+        }
+    }
+
+    for (int i = 0; i < size; ++i) {
+        if (tree[i] == 'Z') {
+            tree[i] = '\0';
+        }
+    }
+
+    newSize = index;
+>>>>>>> 9cbaefa43765d8448e57a98233bfc159a521ec1c
 }
 
 <<<<<<< Updated upstream
@@ -121,6 +185,7 @@ void displayTreeInArrayFormat(char tree[], const int size) {
         cout << i << " | " << tree[i] << endl;
     }
 }
+<<<<<<< HEAD
 void displayTreeInArrayFormat(const map<string, TreeNode*>& nodeMap, TreeNode* node, int depth, vector<string>& output) {
     if (node == NULL) {
         return;
@@ -159,11 +224,18 @@ int main() {
     const string filename = "tree.txt";
     map<string, TreeNode*> nodeMap;
     TreeNode* root = buildBinaryTreeFromFile(filename, nodeMap);
+=======
+
+int main() {
+    const string filename = "tree.txt";
+>>>>>>> 9cbaefa43765d8448e57a98233bfc159a521ec1c
 
 <<<<<<< Updated upstream
     const int MAX = 100;
     char tree[MAX] = {0};
+    int size = 0;
 
+<<<<<<< HEAD
     buildBinaryTree(filename, tree, MAX);
     displayTreeInArrayFormat(tree, MAX);
 
@@ -231,6 +303,11 @@ int main() {
         delete entry.second;
     }
 >>>>>>> Stashed changes
+=======
+    buildBinaryTree(filename, tree, MAX, size);
+    displayTreeInArrayFormat(tree, size);
+    findParent(tree, size);
+>>>>>>> 9cbaefa43765d8448e57a98233bfc159a521ec1c
 
     return 0;
 }
