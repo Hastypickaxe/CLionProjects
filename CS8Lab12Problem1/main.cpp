@@ -1,21 +1,24 @@
 #include <iostream>
-#include <vector>
-#include <iomanip>
+#include <fstream>
 #include <string>
 #include <map>
-#include <fstream>
+#include <vector>
+#include <iomanip>
+
+const int MAX = 100;  // Maximum number of nodes
 
 using namespace std;
 
 class TreeNode {
 public:
     string value;
-    TreeNode* left_child;
-    TreeNode* right_child;
+    TreeNode* left;
+    TreeNode* right;
 
-    TreeNode(string val) : value(val), left_child(nullptr), right_child(nullptr) {}
+    TreeNode(string val) : value(val), left(nullptr), right(nullptr) {}
 };
 
+<<<<<<< Updated upstream
 void buildBinaryTree(const string& filename, char tree[], const int size) {
     ifstream inputFile(filename);
     if(!inputFile.is_open()) {
@@ -45,9 +48,13 @@ void buildBinaryTree(const string& filename, char tree[], const int size) {
 }
 
 TreeNode* buildBinaryTree(const string& filename, map<string, TreeNode*>& nodeMap) {
+=======
+// Function to build a binary tree from the data in a file
+TreeNode* buildBinaryTreeFromFile(const string& filename, map<string, TreeNode*>& nodeMap) {
+>>>>>>> Stashed changes
     ifstream inputFile(filename);
-    if(!inputFile.is_open()) {
-        cout << "Error: Could not open file" << endl;
+    if (!inputFile.is_open()) {
+        cerr << "Error: Could not open the file." << endl;
         return nullptr;
     }
 
@@ -63,16 +70,18 @@ TreeNode* buildBinaryTree(const string& filename, map<string, TreeNode*>& nodeMa
             parentNode = nodeMap[parentVal];
         }
 
-        if (leftVal != "Z" ) {
+        if (leftVal != "Z") {
             TreeNode* leftNode;
             if (nodeMap.find(leftVal) == nodeMap.end()) {
                 leftNode = new TreeNode(leftVal);
                 nodeMap[leftVal] = leftNode;
+            } else {
+                leftNode = nodeMap[leftVal];
             }
-            parentNode->left_child = leftNode;
+            parentNode->left = leftNode;
         }
 
-        if (rightVal != "Z" ) {
+        if (rightVal != "Z") {
             TreeNode* rightNode;
             if (nodeMap.find(rightVal) == nodeMap.end()) {
                 rightNode = new TreeNode(rightVal);
@@ -80,7 +89,7 @@ TreeNode* buildBinaryTree(const string& filename, map<string, TreeNode*>& nodeMa
             } else {
                 rightNode = nodeMap[rightVal];
             }
-            parentNode->right_child = rightNode;
+            parentNode->right = rightNode;
         }
 
         if (root == nullptr) {
@@ -92,18 +101,21 @@ TreeNode* buildBinaryTree(const string& filename, map<string, TreeNode*>& nodeMa
     return root;
 }
 
+// Function to find the parent of a given node
 string findParent(const map<string, TreeNode*>& nodeMap, const string& target) {
     for (const auto& entry : nodeMap) {
-        if (entry.second->left_child && entry.second->left_child->value == target) {
+        TreeNode* current = entry.second;
+        if (current->left && current->left->value == target) {
             return entry.first;
         }
-        if (entry.second->right_child && entry.second->right_child->value == target) {
+        if (current->right && current->right->value == target) {
             return entry.first;
         }
     }
-    return "Not Found";
+    return "Not found";
 }
 
+<<<<<<< Updated upstream
 void displayTreeInArrayFormat(char tree[], const int size) {
     for (int i = 0; i < size; ++i) {
         cout << i << " | " << tree[i] << endl;
@@ -112,21 +124,43 @@ void displayTreeInArrayFormat(char tree[], const int size) {
 void displayTreeInArrayFormat(const map<string, TreeNode*>& nodeMap, TreeNode* node, int depth, vector<string>& output) {
     if (node == NULL) {
         return;
+=======
+// Function to display the binary tree in the desired format
+void displayTreeInArrayFormat(TreeNode* root, map<string, TreeNode*>& nodeMap) {
+    if (!root) return;
+
+    cout << "<Binary tree in array>" << endl;
+
+    vector<TreeNode*> currentLevel;
+    vector<TreeNode*> nextLevel;
+    currentLevel.push_back(root);
+
+    int arrayIndex = 0;
+
+    while (!currentLevel.empty()) {
+        cout << setw(2) << arrayIndex << " | ";
+        for (TreeNode* node : currentLevel) {
+            if (node) {
+                cout << node->value << endl;
+                nextLevel.push_back(nodeMap[node->left->value]);
+                nextLevel.push_back(nodeMap[node->right->value]);
+            }
+        }
+
+        cout << setw(2) << "  | " << string(20, '-') << endl;
+        currentLevel = nextLevel;
+        nextLevel.clear();
+        arrayIndex++;
+>>>>>>> Stashed changes
     }
-    string line = to_string(depth) + " | " + node->value;
-    output.push_back(line);
-
-    cout << depth << " | " << node->value << endl;
-    displayTreeInArrayFormat(nodeMap, node->left_child, depth + 1, output);
-    displayTreeInArrayFormat(nodeMap, node->right_child, depth + 1, output);
-
 }
 
 int main() {
     const string filename = "tree.txt";
     map<string, TreeNode*> nodeMap;
-    TreeNode* root = buildBinaryTree(filename, nodeMap);
+    TreeNode* root = buildBinaryTreeFromFile(filename, nodeMap);
 
+<<<<<<< Updated upstream
     const int MAX = 100;
     char tree[MAX] = {0};
 
@@ -167,6 +201,36 @@ int main() {
 //    for (auto& entry : nodeMap) {
 //        delete entry.second;
 //    }
+=======
+    if (root) {
+        displayTreeInArrayFormat(root, nodeMap);
+
+        char more;
+        do {
+            cout << "Find the parent of a node" << endl;
+            cout << "Enter data: ";
+            string target;
+            cin >> target;
+
+            string parent = findParent(nodeMap, target);
+            if (parent != "Not found") {
+                cout << "The parent of " << target << " is " << parent << endl;
+            } else {
+                cout << "Node not found." << endl;
+            }
+
+            cout << "More(y/n)? : ";
+            cin >> more;
+        } while (more == 'y' || more == 'Y');
+    } else {
+        cout << "Failed to create the binary tree." << endl;
+    }
+
+    // Clean up memory by deleting the nodes
+    for (auto& entry : nodeMap) {
+        delete entry.second;
+    }
+>>>>>>> Stashed changes
 
     return 0;
 }
