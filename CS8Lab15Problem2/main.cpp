@@ -48,6 +48,21 @@ bool isHeap(const vector<int>& arr) {
     return true;
 }
 
+bool isMinHeap(const vector<int>& arr) {
+    for (int i = 1; i < arr.size(); ++i) {
+        int parentIndex = (i - 1) / 2;
+        if (arr[i] < arr[parentIndex]) {
+            return false;
+        }
+
+        //        if (arr[i] > arr[i / 2]) {
+//            return false;
+//        }
+    }
+
+    return true;
+}
+
 int main() {
     ifstream infile("data.txt");
     if (!infile) {
@@ -56,10 +71,13 @@ int main() {
     }
 
     int n;
+    int input;
+
     while (infile >> n) {
         vector<int> arr;
-        while (infile >> n) {
-            arr.push_back(n);
+        for (int i = 0; i < n; i++) {
+            infile >> input;
+            arr.push_back(input);
         }
 
         cout << "Original heap: ";
@@ -70,6 +88,8 @@ int main() {
 
         if (isHeap(arr)) {
             cout << "Max heap" << endl;
+        }else if (isMinHeap(arr)) {
+            cout << "Min heap" << endl;
         } else {
             cout << "Not a heap. Applying Heapify algorithm" << endl;
             buildHeap(arr);
