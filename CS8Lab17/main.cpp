@@ -25,6 +25,9 @@ class BTree {
 private:
     BTreeNode* root;
 
+    bool existsInNode(BTreeNode* node, int value);
+    int findKeyPosition(BTreeNode* node, int key);
+
     void insertNonFull(BTreeNode* node, int key);
 
 public:
@@ -44,7 +47,24 @@ public:
     }
 };
 
-void BTree :: splitChild(BTreeNode* parent, int index, BTreeNode* child) {
+bool BTree::existsInNode(BTreeNode* node, int value) {
+    for (int i = 0; i < node->count; ++i) {
+        if (node->data[i] == value) {
+            return true; // Duplicate found
+        }
+    }
+    return false; // No duplicate found
+}
+
+int BTree::findKeyPosition(BTreeNode* node, int key) {
+    int i = 0;
+    while (i < node->count && key > node->data[i]) {
+        ++i;
+    }
+    return i;
+}
+
+void BTree::splitChild(BTreeNode* parent, int index, BTreeNode* child) {
     BTreeNode* newChild = new BTreeNode();
     newChild->leaf = child->leaf;
     newChild->count = MAX / 2;
@@ -71,36 +91,44 @@ void BTree :: splitChild(BTreeNode* parent, int index, BTreeNode* child) {
         parent->data[j + 1] = parent->data[j];
     }
 
-    parent->data[index] = child->data[MAX / 2];
+    parent->data[index] = child->data[MAX / 2 - 1];
     ++parent->count;
 }
 
-void BTree::insertNonFull(BTreeNode* node, int value) {
-    int i = node->count - 1;
+void BTree::insertNonFull(BTreeNode* node, int key) {
+    int index = findKeyPosition(node, key);
 
     if (node->leaf) {
-        while (i >= 0 && value < node->data[i]) {
-            node->data[i + 1] = node->data[i];
-            --i;
+        // Check for duplicates in the current node
+        if (existsInNode(node, key)) {
+            return; // Duplicate, do nothing
         }
 
-        node->data[i + 1] = value;
+        // Shift elements to make space for the new key
+        for (int i = node->count - 1; i >= index; --i) {
+            node->data[i + 1] = node->data[i];
+        }
+
+        // Insert the new key
+        node->data[index] = key;
         ++node->count;
     } else {
-        while (i >= 0 && value < node->data[i]) {
-            --i;
+        // Check for duplicates in the current node before traversing
+        if (index < node->count && key == node->data[index]) {
+            return; // Duplicate, do nothing
         }
 
-        ++i;
+        // Ensure we don't go beyond the maximum count
+        if (node->childPtr[index]->count == MAX) {
+            splitChild(node, index, node->childPtr[index]);
 
-        if (node->childPtr[i]->count == MAX) {
-            splitChild(node, i, node->childPtr[i]);
-
-            if (value > node->data[i])
-                ++i;
+            // Determine which of the two children to descend to
+            if (key > node->data[index]) {
+                ++index;
+            }
         }
 
-        insertNonFull(node->childPtr[i], value);
+        insertNonFull(node->childPtr[index], key);
     }
 }
 
@@ -114,7 +142,7 @@ void BTree::insert(int key) {
             BTreeNode* newRoot = new BTreeNode();
             newRoot->childPtr[0] = root;
             root = newRoot;
-            splitChild(newRoot, 0, root->childPtr[0]);
+            splitChild(newRoot, 0, newRoot->childPtr[0]);
             insertNonFull(newRoot, key);
         } else {
             insertNonFull(root, key);
@@ -143,7 +171,7 @@ void BTree::display(BTreeNode* node, int level) {
             for (int j = 0; j < level; ++j)
                 std::cout << "    ";
 
-            std::cout << node->data[i] << std::endl;
+            std::cout << node->data[i] << " ";
         }
         display(node->childPtr[0], level + 1);
     }
