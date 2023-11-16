@@ -18,6 +18,23 @@ public:
         }
     }
 
+    int getCount() const {
+        return count;
+    }
+
+    int getData(int index) const {
+        return data[index];
+    }
+
+    bool isLeaf() const {
+        return leaf;
+    }
+
+    BTreeNode* getChildPtr(int index) const {
+        return childPtr[index];
+    }
+
+
     friend class BTree;
 };
 
@@ -26,6 +43,7 @@ private:
     BTreeNode* root;
 
     void insertNonFull(BTreeNode* node, int key);
+    bool searchKey(BTreeNode* node, int key);
 
 public:
     BTree() : root(nullptr) {}
@@ -42,9 +60,11 @@ public:
     void display() {
         display(getRoot(), 0);
     }
+
+    bool search(int key);
 };
 
-void BTree :: splitChild(BTreeNode* parent, int index, BTreeNode* child) {
+void BTree::splitChild(BTreeNode* parent, int index, BTreeNode* child) {
     BTreeNode* newChild = new BTreeNode();
     newChild->leaf = child->leaf;
     newChild->count = MAX / 2;
@@ -61,22 +81,41 @@ void BTree :: splitChild(BTreeNode* parent, int index, BTreeNode* child) {
 
     child->count = MAX / 2;
 
-    for (int j = parent->count; j > index; --j) {
-        parent->childPtr[j + 1] = parent->childPtr[j];
+    // Check if the middle element already exists in the parent
+    bool middleElementExists = false;
+    for (int j = 0; j < parent->count; ++j) {
+        if (parent->data[j] == child->data[MAX / 2]) {
+            middleElementExists = true;
+            break;
+        }
     }
 
-    parent->childPtr[index + 1] = newChild;
+    // Insert the middle element into the parent only if it doesn't already exist
+    if (!middleElementExists) {
+        for (int j = parent->count; j > index; --j) {
+            parent->childPtr[j + 1] = parent->childPtr[j];
+        }
 
-    for (int j = parent->count - 1; j >= index; --j) {
-        parent->data[j + 1] = parent->data[j];
+        parent->childPtr[index + 1] = newChild;
+
+        for (int j = parent->count - 1; j >= index; --j) {
+            parent->data[j + 1] = parent->data[j];
+        }
+
+        parent->data[index] = child->data[MAX / 2];
+        ++parent->count;
     }
-
-    parent->data[index] = child->data[MAX / 2];
-    ++parent->count;
 }
+
 
 void BTree::insertNonFull(BTreeNode* node, int value) {
     int i = node->count - 1;
+
+    // Check if the value already exists in the node
+    while (i >= 0 && value == node->data[i]) {
+        cout << "Key " << value << " already exists in the B-tree. Skipping insertion.\n";
+        return;
+    }
 
     if (node->leaf) {
         while (i >= 0 && value < node->data[i]) {
@@ -104,12 +143,40 @@ void BTree::insertNonFull(BTreeNode* node, int value) {
     }
 }
 
+
+bool BTree::search(int key) {
+    return searchKey(root, key);
+}
+
+bool BTree::searchKey(BTreeNode* node, int key) {
+    int i = 0;
+    while (i < node->count && key > node->data[i]) {
+        i++;
+    }
+
+    if (i < node->count && key == node->data[i]) {
+        return true;
+    } else if (node->leaf) {
+        return false;
+    } else {
+        return searchKey(node->childPtr[i], key);
+    }
+}
+
 void BTree::insert(int key) {
     if (root == nullptr) {
+        // If the tree is empty, create a new root with the key
         root = new BTreeNode();
         root->data[0] = key;
         root->count = 1;
     } else {
+        // Check if the key already exists in the tree
+        if (search(key)) {
+            cout << "Key " << key << " already exists in the B-tree. Skipping insertion.\n";
+            return;
+        }
+
+        // If the root is full, split it and create a new root
         if (root->count == MAX) {
             BTreeNode* newRoot = new BTreeNode();
             newRoot->childPtr[0] = root;
@@ -117,6 +184,7 @@ void BTree::insert(int key) {
             splitChild(newRoot, 0, root->childPtr[0]);
             insertNonFull(newRoot, key);
         } else {
+            // If the root is not full, insert the key
             insertNonFull(root, key);
         }
     }
