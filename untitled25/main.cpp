@@ -44,19 +44,19 @@ public:
         root = nullptr;                // Initially, the tree is empty
     }
 
-    void insert(int k);                // Function to insert a key into the B-tree
+    void insert(int key);                // Function to insert a key into the B-tree
     void constructBTree();            // Function to construct the B-tree by taking user input
     void printTree();                  // Function to print the entire B-tree
 };
 
-void BTree::insert(int k)
+void BTree::insert(int key)
 {
     // Function to insert a key into the B-tree
     if (root == nullptr)
     {
         // If the tree is empty, create a new root node
         root = new BTreeNode;
-        root->data[0] = k;
+        root->data[0] = key;
         root->count = 1;
     }
     else
@@ -64,14 +64,14 @@ void BTree::insert(int k)
         if (root->count == MAX)
         {
             // If the root is full, create a new root and split the old root
-            BTreeNode *s = new BTreeNode;
-            s->childPtr[0] = root;
-            splitChild(s, 0, root);
-            root = s;
+            BTreeNode *newRoot = new BTreeNode;
+            newRoot->childPtr[0] = root;
+            splitChild(newRoot, 0, root);
+            root = newRoot;
         }
         else
         {
-            insertNonFull(root, k);
+            insertNonFull(root, key);
         }
     }
 }
@@ -126,17 +126,22 @@ void BTree::splitChild(BTreeNode *parent, int index, BTreeNode *child)
     for (int i = 0; i < MAX / 2; i++)
     {
         // Move the second half of keys from child to newChild
-        newChild->data[i] = child->data[i + MAX / 2 + 1];
+        int newIndex = i + MAX / 2;
+        newChild->data[i] = child->data[newIndex];
     }
 
+    // Uncomment the following block if you have non-leaf nodes
+    /*
     if (!child->leaf)
     {
-        for (int i = 0; i < MAX / 2 + 1; i++)
+        for (int i = 0; i < MAX / 2; i++)
         {
             // Move the second half of child pointers from child to newChild
-            newChild->childPtr[i] = child->childPtr[i + MAX / 2 + 1];
+            int newIndex = i + MAX / 2;
+            newChild->childPtr[i] = child->childPtr[newIndex];
         }
     }
+    */
 
     child->count = MAX / 2;
 
@@ -157,6 +162,7 @@ void BTree::splitChild(BTreeNode *parent, int index, BTreeNode *child)
     parent->data[index] = child->data[MAX / 2];
     parent->count++;
 }
+
 
 void BTree::constructBTree()
 {
