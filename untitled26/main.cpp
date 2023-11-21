@@ -1,213 +1,225 @@
 #include <iostream>
 using namespace std;
 
-const int MAX = 5;
+const int MAX_KEYS = 5;
 
+// Class representing a node in the B-tree
 class BTreeNode {
 public:
-    int *data;
-    BTreeNode **child_ptr;
-    bool leaf;
-    int n;
+    int *keys;                    // Array to store keys
+    BTreeNode **child_pointers;   // Array to store pointers to child nodes
+    bool is_leaf;                 // Flag to indicate if the node is a leaf
+    int key_count;                // Number of keys currently in the node
 
     BTreeNode() {
-        data = new int[MAX];
-        child_ptr = new BTreeNode*[MAX + 1];
-        leaf = true;
-        n = 0;
+        keys = new int[MAX_KEYS];                    // Allocate memory for keys
+        child_pointers = new BTreeNode*[MAX_KEYS + 1];  // Allocate memory for child pointers
+        is_leaf = true;                              // Initialize as leaf node
+        key_count = 0;                               // Initialize key count
 
-        for (int i = 0; i < MAX + 1; i++) {
-            child_ptr[i] = nullptr;
+        for (int i = 0; i < MAX_KEYS + 1; i++) {
+            child_pointers[i] = nullptr;            // Initialize child pointers to null
         }
     }
 
     ~BTreeNode() {
-        delete[] data;
-        delete[] child_ptr;
+        delete[] keys;                               // Free memory for keys
+        delete[] child_pointers;                     // Free memory for child pointers
     }
 };
 
+// Class representing the B-tree itself
 class BTree {
 private:
-    BTreeNode *root;
-    BTreeNode *np;
-    BTreeNode *x;
+    BTreeNode *root;          // Pointer to the root node of the tree
+    BTreeNode *new_node;      // Pointer to a new node during node splitting
+    BTreeNode *current_node;  // Pointer to the current node during tree traversal
 
 public:
-    BTree() : root(nullptr), np(nullptr), x(nullptr) {}
+    BTree() : root(nullptr), new_node(nullptr), current_node(nullptr) {}
 
+    // Function to get the root of the tree
     BTreeNode* getRoot() {
         return root;
     }
 
+    // Destructor to delete the entire tree
     ~BTree() {
         delete_tree(root);
     }
 
-    void delete_tree(BTreeNode *p) {
-        if (p) {
-            if (!p->leaf) {
-                for (int i = 0; i < p->n + 1; i++) {
-                    delete_tree(p->child_ptr[i]);
+    // Recursive function to delete the tree
+    void delete_tree(BTreeNode *node) {
+        if (node) {
+            if (!node->is_leaf) {
+                for (int i = 0; i < node->key_count + 1; i++) {
+                    delete_tree(node->child_pointers[i]);
                 }
             }
-            delete p;
+            delete node;
         }
     }
 
-    BTreeNode *init() {
-        np = new BTreeNode();
-        return np;
+    // Function to initialize a new node
+    BTreeNode *initialize_node() {
+        new_node = new BTreeNode();
+        return new_node;
     }
 
-    void traverse(BTreeNode *p) {
+    // Function to traverse the tree and print its contents
+    void traverse(BTreeNode *node) {
         cout << endl;
 
-        for (int i = 0; i < p->n; i++) {
-            if (!p->leaf) {
-                traverse(p->child_ptr[i]);
+        for (int i = 0; i < node->key_count; i++) {
+            if (!node->is_leaf) {
+                traverse(node->child_pointers[i]);
             }
-            cout << " " << p->data[i];
+            cout << " " << node->keys[i];
         }
 
-        if (!p->leaf) {
-            traverse(p->child_ptr[p->n]);
+        if (!node->is_leaf) {
+            traverse(node->child_pointers[node->key_count]);
         }
 
         cout << endl;
     }
 
-    void sort(int *p, int n) {
+    // Function to sort an array of keys
+    void sort(int *arr, int n) {
         for (int i = 0; i < n; i++) {
             for (int j = i; j < n; j++) {
-                if (p[i] > p[j]) {
-                    swap(p[i], p[j]);
+                if (arr[i] > arr[j]) {
+                    swap(arr[i], arr[j]);
                 }
             }
         }
     }
 
-    int split_child(BTreeNode *x, int i) {
+    // Function to split a child node during insertion
+    int split_child(BTreeNode *current_node, int index) {
         int j, mid;
-        BTreeNode *np1, *np3, *y;
-        np3 = init();
-        np3->leaf = true;
+        BTreeNode *new_node, *temp_node, *child_node;
+        temp_node = initialize_node();
+        temp_node->is_leaf = true;
 
-        if (i == -1) {
-            mid = x->data[MAX / 2];
-            x->data[MAX / 2] = 0;
-            x->n--;
+        if (index == -1) {
+            mid = current_node->keys[MAX_KEYS / 2];
+            current_node->keys[MAX_KEYS / 2] = 0;
+            current_node->key_count--;
 
-            np1 = init();
-            np1->leaf = false;
-            x->leaf = true;
+            new_node = initialize_node();
+            new_node->is_leaf = false;
+            current_node->is_leaf = true;
 
-            for (j = MAX / 2 + 1; j < MAX; j++) {
-                np3->data[j - (MAX / 2 + 1)] = x->data[j];
-                np3->child_ptr[j - (MAX / 2 + 1)] = x->child_ptr[j];
-                np3->n++;
-                x->data[j] = 0;
-                x->n--;
+            for (j = MAX_KEYS / 2 + 1; j < MAX_KEYS; j++) {
+                temp_node->keys[j - (MAX_KEYS / 2 + 1)] = current_node->keys[j];
+                temp_node->child_pointers[j - (MAX_KEYS / 2 + 1)] = current_node->child_pointers[j];
+                temp_node->key_count++;
+                current_node->keys[j] = 0;
+                current_node->key_count--;
             }
 
-            for (j = 0; j < MAX + 1; j++) {
-                x->child_ptr[j] = nullptr;
+            for (j = 0; j < MAX_KEYS + 1; j++) {
+                current_node->child_pointers[j] = nullptr;
             }
 
-            np1->data[0] = mid;
-            np1->child_ptr[np1->n] = x;
-            np1->child_ptr[np1->n + 1] = np3;
-            np1->n++;
-            root = np1;
+            new_node->keys[0] = mid;
+            new_node->child_pointers[new_node->key_count] = current_node;
+            new_node->child_pointers[new_node->key_count + 1] = temp_node;
+            new_node->key_count++;
+            root = new_node;
         } else {
-            y = x->child_ptr[i];
-            mid = y->data[MAX / 2];
-            y->data[MAX / 2] = 0;
-            y->n--;
+            child_node = current_node->child_pointers[index];
+            mid = child_node->keys[MAX_KEYS / 2];
+            child_node->keys[MAX_KEYS / 2] = 0;
+            child_node->key_count--;
 
-            for (j = MAX / 2 + 1; j < MAX; j++) {
-                np3->data[j - (MAX / 2 + 1)] = y->data[j];
-                np3->n++;
-                y->data[j] = 0;
-                y->n--;
+            for (j = MAX_KEYS / 2 + 1; j < MAX_KEYS; j++) {
+                temp_node->keys[j - (MAX_KEYS / 2 + 1)] = child_node->keys[j];
+                temp_node->key_count++;
+                child_node->keys[j] = 0;
+                child_node->key_count--;
             }
 
-            x->child_ptr[i + 1] = y;
-            x->child_ptr[i + 1] = np3;
+            current_node->child_pointers[index + 1] = child_node;
+            current_node->child_pointers[index + 1] = temp_node;
         }
 
         return mid;
     }
 
-    void insert(int a) {
-        int i, temp;
-        x = root;
+    // Function to insert a key into the B-tree
+    void insert(int key) {
+        int index, temp;
+        current_node = root;
 
-        if (x == nullptr) {
-            root = init();
-            x = root;
+        if (current_node == nullptr) {
+            root = initialize_node();
+            current_node = root;
         } else {
-            if (x->leaf && x->n == MAX) {
-                temp = split_child(x, -1);
-                x = root;
+            if (current_node->is_leaf && current_node->key_count == MAX_KEYS) {
+                temp = split_child(current_node, -1);
+                current_node = root;
 
-                for (i = 0; i < x->n; i++) {
-                    if ((a > x->data[i]) && (a < x->data[i + 1])) {
-                        i++;
+                for (index = 0; index < current_node->key_count; index++) {
+                    if ((key > current_node->keys[index]) && (key < current_node->keys[index + 1])) {
+                        index++;
                         break;
-                    } else if (a < x->data[0]) {
+                    } else if (key < current_node->keys[0]) {
                         break;
                     } else {
                         continue;
                     }
                 }
 
-                x = x->child_ptr[i];
+                current_node = current_node->child_pointers[index];
             } else {
-                while (!x->leaf) {
-                    for (i = 0; i < x->n; i++) {
-                        if ((a > x->data[i]) && (a < x->data[i + 1])) {
-                            i++;
+                while (!current_node->is_leaf) {
+                    for (index = 0; index < current_node->key_count; index++) {
+                        if ((key > current_node->keys[index]) && (key < current_node->keys[index + 1])) {
+                            index++;
                             break;
-                        } else if (a < x->data[0]) {
+                        } else if (key < current_node->keys[0]) {
                             break;
                         } else {
                             continue;
                         }
                     }
 
-                    if (x->child_ptr[i]->n == MAX) {
-                        temp = split_child(x, i);
-                        x->data[x->n] = temp;
-                        x->n++;
+                    if (current_node->child_pointers[index]->key_count == MAX_KEYS) {
+                        temp = split_child(current_node, index);
+                        current_node->keys[current_node->key_count] = temp;
+                        current_node->key_count++;
+                        sort(current_node->keys, current_node->key_count);
                         continue;
                     } else {
-                        x = x->child_ptr[i];
+                        current_node = current_node->child_pointers[index];
                     }
                 }
             }
         }
 
-        x->data[x->n] = a;
-        sort(x->data, x->n);
-        x->n++;
+        current_node->keys[current_node->key_count] = key;
+        current_node->key_count++;
+        sort(current_node->keys, current_node->key_count);
     }
 };
 
+// Main function for testing the B-tree
 int main() {
-    int i, n, t;
-    cout << "enter the no of elements to be inserted\n";
-    cin >> n;
+    int index, num_elements, input_key;
+    cout << "Enter the number of elements to be inserted: ";
+    cin >> num_elements;
 
     BTree btree;
 
-    for (i = 0; i < n; i++) {
-        cout << "enter the element\n";
-        cin >> t;
-        btree.insert(t);
+    for (index = 0; index < num_elements; index++) {
+        cout << "Enter element #" << index << ": ";
+        cin >> input_key;
+        btree.insert(input_key);
     }
 
-    cout << "traversal of constructed tree\n";
+    cout << "Constructed B-Tree\n";
     btree.traverse(btree.getRoot());
 
     return 0;
