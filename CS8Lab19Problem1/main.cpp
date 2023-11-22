@@ -10,6 +10,9 @@ int polynomialRollingHash(const string& str, int length) {
     int hashValue = 0;
     for (int i = 0; i < length; ++i) {
         hashValue = (hashValue * P + str[i]) % M;
+        if (hashValue < 0) {
+            hashValue += M;
+        }
     }
     return hashValue;
 }
@@ -49,7 +52,6 @@ public:
     pair<int, int> search(const string& key) {
         int hashValue = polynomialRollingHash(key, key.length());
         int index = hashValue % M;
-        int originalIndex = index;
         int probingCount = 0;
 
         while (table[index].second != -1 && table[index].first != key) {
@@ -58,14 +60,14 @@ public:
             probingCount++;
 
             // Check if we have completed a full loop
-            if (index == originalIndex) {
-                cerr << "Key not found in the hash table." << endl;
+            if (probingCount == M) {
+                cout << "Key not found in the hash table." << endl;
                 return make_pair(-1, probingCount);
             }
         }
 
         if (table[index].first == key) {
-            return make_pair(index, probingCount);
+            return make_pair(index, probingCount + 1);
         } else {
             // Key not found
             return make_pair(-1, probingCount + 1); // Increment probing count for unsuccessful search
