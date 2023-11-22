@@ -213,10 +213,23 @@ int main() {
 
     BTree btree;
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+    for (i = 0; i < n; i++) {
+        cout << "enter the "<< i << " element\n";
+        cin >> t;
+        btree.insert(t);
+=======
+>>>>>>> Stashed changes
     for (index = 0; index < num_elements; index++) {
         cout << "Enter element #" << index << ": ";
         cin >> input_key;
         btree.insert(input_key);
+<<<<<<< Updated upstream
+=======
+>>>>>>> 1de8c3768bf2dbeaa8f08cdb1702cf48c48ded53
+>>>>>>> Stashed changes
     }
 
     cout << "Constructed B-Tree\n";
