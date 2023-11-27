@@ -1,7 +1,7 @@
 #include <iostream>
 using namespace std;
 
-const int MAX_KEYS = 5;
+const int MAX_KEYS = 4;
 
 // Class representing a node in the B-tree
 class BTreeNode {
