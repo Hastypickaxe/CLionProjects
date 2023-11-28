@@ -24,7 +24,7 @@ private:
 public:
     LinearProbingHashTable() {
         for (int i = 0; i < M; ++i) {
-            table[i] = make_pair("", -1);
+            table[i] = make_pair("", 0); // Use an empty string for key and 0 for count to represent an empty slot
         }
     }
 
@@ -34,7 +34,7 @@ public:
         int originalIndex = index;
         int probingCount = 0;
 
-        while (table[index].second != -1) {
+        while (table[index].second != 0) { // Check for 0 to detect an empty slot
             // Linear probing
             index = (index + 1) % M;
             probingCount++;
@@ -54,7 +54,7 @@ public:
         int index = hashValue % M;
         int probingCount = 0;
 
-        while (table[index].second != -1 && table[index].first != key) {
+        while (table[index].second != 0 && table[index].first != key) { // Check for 0 to detect an empty slot
             // Linear probing
             index = (index + 1) % M;
             probingCount++;
