@@ -1,6 +1,9 @@
-// This is a header guard to prevent the inclusion of this header file multiple times in the same program.
-#ifndef HASHTABLE_H
-#define HASHTABLE_H
+//
+// Created by Kevin on 11/28/2023.
+//
+
+#ifndef CS8LAB19PROBLEM3_HASHTABLE_H
+#define CS8LAB19PROBLEM3_HASHTABLE_H
 
 #include <iostream>
 #include <fstream>
@@ -34,4 +37,4 @@ public:
 
 };
 
-#endif  // HASHTABLE_H
+#endif //CS8LAB19PROBLEM3_HASHTABLE_H

@@ -1,133 +1,106 @@
-#include <iostream>
-#include <fstream>
-#include <string>
-using namespace std;
+#include "hashtable.h"
 
-const int M = 25; // Hash table size
-const int P = 7;  // Prime number for polynomial rolling hash function
+// Hashing function to find the index in the hash table
+int linearHash(string name) {
+    int index = 0;
 
-int polynomialRollingHash(const string& str, int length) {
-    int hashValue = 0;
-    for (int i = 0; i < length; ++i) {
-        hashValue = (hashValue * P + str[i]) % M;
-        if (hashValue < 0) {
-            hashValue += M;
-        }
+    // Iterates through the string and applies a formula to find the index to save the name-value pair
+    for (int i = 0; i < name.length(); i++) {
+        index += name[i] * pow(7, i);
     }
-    return hashValue;
+
+    return index % MAX;
 }
 
-class LinearProbingHashTable {
-private:
-    pair<string, int> table[M];
+// Function to print the hash table
+void printHash(hashTable table[]) {
+    cout << "< Hash Table (Linear probing) >" << endl;
+    cout << "-------------------------------" << endl;
 
-public:
-    LinearProbingHashTable() {
-        for (int i = 0; i < M; ++i) {
-            table[i] = make_pair("", 0); // Use an empty string for key and 0 for count to represent an empty slot
-        }
-    }
+    for(int i = 0; i < MAX; i++) {
+        cout << setw(3) << i << setw(12);
 
-    void insert(const string& key, int value) {
-        int hashValue = polynomialRollingHash(key, key.length());
-        int index = hashValue % M;
-        int originalIndex = index;
-        int probingCount = 0;
-
-        while (table[index].second != 0) { // Check for 0 to detect an empty slot
-            // Linear probing
-            index = (index + 1) % M;
-            probingCount++;
-
-            // Check if we have completed a full loop
-            if (index == originalIndex) {
-                cerr << "Hash table is full. Unable to insert: " << key << endl;
-                return;
-            }
-        }
-
-        table[index] = make_pair(key, value);
-    }
-
-    pair<int, int> search(const string& key) {
-        int hashValue = polynomialRollingHash(key, key.length());
-        int index = hashValue % M;
-        int probingCount = 0;
-
-        while (table[index].second != 0 && table[index].first != key) { // Check for 0 to detect an empty slot
-            // Linear probing
-            index = (index + 1) % M;
-            probingCount++;
-
-            // Check if we have completed a full loop
-            if (probingCount == M) {
-                cout << "Key not found in the hash table." << endl;
-                return make_pair(-1, probingCount);
-            }
-        }
-
-        if (table[index].first == key) {
-            return make_pair(index, probingCount + 1);
+        if (table[i].getName() == " ") {
+            cout << setw(12) << " " << endl;
         } else {
-            // Key not found
-            return make_pair(-1, probingCount + 1); // Increment probing count for unsuccessful search
+            cout << setw(12) << table[i].getName() << setw(12) << table[i].getValue() << endl;
         }
     }
+    cout << "-------------------------------" << endl;
+}
 
-    const pair<string, int>& operator[](int index) const {
-        return table[index];
+// Function that searches for a name in the hash table using linear probing
+void probing(hashTable table[], string name) {
+    int index = linearHash(name);
+    int probes = 0;
+
+    // If name not in table and table is not empty
+    while (table[index].getName() != name && table[index].getName() != " "){
+        index = (index + 1) % MAX;
+        probes++;
     }
-};
 
+    // If name is found in table, outputs the results
+    if(name == table[index].getName()) {
+        cout << name << " is found after " << probes + 1 << " probing" << endl;
+        cout << "There are " << table[index].getValue() << " people who have surname " << name << endl;
+    } else {
+        cout << "There is no surname " << name << endl;
+    }
+}
+
+// Main function
 int main() {
-    ifstream inputFile("data.txt");
-    if (!inputFile.is_open()) {
-        cout << "Error opening file." << endl;
-        return 1;
+    // Open the data file
+    ifstream infile;
+    string file = "data.txt";
+    infile.open(file);
+
+    // Check if the file opened successfully
+    if(infile.fail()) {
+        cout << "File failed to open" << endl;
+        exit(1);
     }
 
-    LinearProbingHashTable hashTable;
+    string name;
+    int value;
+    hashTable table[MAX];
 
-    string surname;
-    int count;
+    // Read in the data from the file and store it in the hash table
+    while(!infile.eof()) {
+        infile >> name >> value;
+        int index = linearHash(name);
 
-    while (inputFile >> surname >> count) {
-        hashTable.insert(surname, count);
-    }
-
-    inputFile.close();
-
-    cout << "< Hash Table (Linear Probing) >" << endl;
-    cout << "-------------------------------------" << endl;
-
-    for (int i = 0; i < M; ++i) {
-        pair<int, int> result = hashTable.search(hashTable[i].first);
-        if (result.first != -1) {
-            cout << i << " " << hashTable[result.first].first << " " << hashTable[result.first].second << endl;
+        // If not empty, apply the check for collision and then insert into table
+        while(table[index].getName() != " ") {
+            index = (index + 1) % MAX;
         }
+        table[index] = hashTable(name, value);
     }
 
-    while (true) {
-        cout << "\nEnter surname to search: ";
-        cin >> surname;
+    // Print the hash table
+    printHash(table);
 
-        pair<int, int> result = hashTable.search(surname);
+    cout << endl;
 
-        if (result.first != -1) {
-            cout << surname << " is found after " << result.second << " probing" << endl;
-            cout << "There are " << hashTable[result.first].second << " people with the surname '" << surname << "'" << endl;
-        } else {
-            cout << surname << " not found in the hash table." << endl;
-        }
+    char choice;
+    string userInput;
 
-        cout << "More to search? (y/n): ";
-        char choice;
+    // Search for surnames in the hash table based on user input
+    do {
+        cout << "Enter surname to search : ";
+        cin >> userInput;
+
+        probing(table, userInput);
+
+        cout << endl;
+        cout << "More to search? (y/n) ";
         cin >> choice;
+        cout << endl;
+    } while(choice == 'y' || choice == 'Y');
 
-        if (choice != 'y' && choice != 'Y') {
-            break;
-        }
-    }
+    // Close the file
+    infile.close();
 
     return 0;
 }
