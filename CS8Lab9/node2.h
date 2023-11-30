@@ -7,6 +7,8 @@
 #include <cstdlib> // Provides NULL and size_t
 #include <cassert>
 
+using namespace std;
+
 namespace template_bag4
 {
     template <class Item>
@@ -43,6 +45,8 @@ namespace template_bag4
     template <class Item>
     void list_insert(node<Item>* previous_ptr, const Item& entry);
     template <class Item>
+    void list_sort_insert(node<Item>*& head_ptr, const Item& entry);
+    template <class Item>
     std::size_t list_length(const node<Item>* head_ptr);
     template <class Item>
     node<Item>* list_locate(node<Item>* head_ptr, int position);
@@ -50,6 +54,8 @@ namespace template_bag4
     void list_remove(node<Item>* previous_ptr);
     template <class Item>
     node<Item>* list_search(node<Item>* head_ptr, const Item& target);
+    template <class Item>
+    void list_display(node<Item>* head);
 
     template <class Item>
     void list_clear(node<Item>*& head_ptr) {
@@ -93,6 +99,34 @@ namespace template_bag4
     }
 
     template <class Item>
+    void list_sort_insert(node<Item>*& head_ptr, const Item& entry)
+    {
+        node<Item>* newNode;
+        newNode = new node<Item>(entry);
+
+        if (head_ptr->data() >= newNode->data()) {
+            newNode->setNext(head_ptr);
+            newNode->getNext()->setPrev(newNode);
+            head_ptr = newNode;
+        } else {
+            node<Item>* current = head_ptr;
+
+            while (current->getNext() != NULL && current->getNext()->data() < newNode->data()) {
+                current = current->getNext();
+            }
+
+            newNode->setNext(current->getNext());
+
+            if (current->getNext() != NULL) {
+                newNode->getNext()->setPrev(newNode);
+            }
+
+            current->setNext(newNode);
+            newNode->setPrev(current);
+        }
+    }
+
+    template <class Item>
     std::size_t list_length(const node<Item>* head_ptr)
     {
         const node<Item>* cursor;
@@ -132,6 +166,17 @@ namespace template_bag4
                 return cursor;
         return NULL;
     }
-}
+
+    template <class Item>
+    void list_display(node<Item>*& head) {
+        node<Item>* cursor = head;
+
+        while (cursor != NULL) {
+            cout << cursor->data() << "<->";
+            cursor = cursor->getNext();
+        }
+
+        cout << "NULL" << endl;
+    }
 
 #endif //CS8LAB9_NODE2_H

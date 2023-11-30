@@ -1,7 +1,7 @@
 #include<iostream>
 
 //Name: Justin Dang
-//Time complexity for test2: O(logn)
+//Time complexity for test2: O(log N)
 
 using namespace std;
 

@@ -9,23 +9,25 @@ int main() {
     node<int>* head = nullptr;
     node<int>* current = nullptr; // New pointer to keep track of the current node
 
+    // 4 7 2 4 1 5 0
+
     do {
         cout << "Enter a number: ";
         cin >> n;
 
         if (head == nullptr) {
-            list_head_insert(head, n);
+            template_bag4::list_head_insert(head, n);
             current = head; // Set current to the head in the first iteration
         } else if (n != 0){
-            list_insert(current, n);
-            current = current->getNext(); // Move current to the new node
+            template_bag4::list_sort_insert(head, n);
+//            current = current->getNext(); // Move current to the new node
         }
 
     } while (n != 0);
 
-    node_iterator<int> iter(head);
+//    node_iterator<int> iter(head);
 
-    cout << "";
+    template_bag4::list_display(head);
 
     return 0;
 }
