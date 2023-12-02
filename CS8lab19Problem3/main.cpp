@@ -1,5 +1,5 @@
 // Include the header file that contains the definition of the hashTable class
-#include "hashtable.h"
+#include "hash.h"
 
 // Function to compute the hash index using the first hashing method
 int hashing1(string name) {

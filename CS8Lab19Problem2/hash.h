@@ -2,8 +2,8 @@
 // Created by Kevin on 11/28/2023.
 //
 
-#ifndef CS8LAB19PROBLEM3_HASHTABLE_H
-#define CS8LAB19PROBLEM3_HASHTABLE_H
+#ifndef CS8LAB19PROBLEM2_HASH_H
+#define CS8LAB19PROBLEM2_HASH_H
 
 #include <iostream>
 #include <fstream>
@@ -37,4 +37,4 @@ public:
 
 };
 
-#endif //CS8LAB19PROBLEM3_HASHTABLE_H
+#endif //CS8LAB19PROBLEM2_HASH_H

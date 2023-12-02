@@ -1,4 +1,4 @@
-#include "hashtable.h"
+#include "hash.h"
 
 // Hashing function to find the index in the hash table
 int linearHash(string name) {
