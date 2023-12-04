@@ -1,8 +1,101 @@
 #include <iostream>
 #include <fstream>
-#include <queue>
 
 using namespace std;
+
+class MaxHeap {
+private:
+    int* elements;
+    int size;
+    int capacity;
+
+public:
+    MaxHeap(int initialCapacity = 10) {
+        capacity = initialCapacity;
+        elements = new int[capacity];
+        size = 0;
+    }
+
+    ~MaxHeap() {
+        delete[] elements;
+    }
+
+    void push(int value) {
+        if (size == capacity) {
+            resize();
+        }
+
+        int currentIndex = size;
+        elements[size++] = value;
+
+        while (currentIndex > 0) {
+            int parentIndex = (currentIndex - 1) / 2;
+            if (elements[currentIndex] > elements[parentIndex]) {
+                swap(elements[currentIndex], elements[parentIndex]);
+                currentIndex = parentIndex;
+            } else {
+                break;
+            }
+        }
+    }
+
+    void pop() {
+        if (size == 0) {
+            return;
+        }
+
+        elements[0] = elements[--size];
+        heapifyDown(0);
+    }
+
+    bool empty() const {
+        return size == 0;
+    }
+
+    int top() const {
+        return size > 0 ? elements[0] : -1; // Assuming -1 as an invalid value for an empty heap
+    }
+
+    // Added a function to get the array size
+    int getSize() const {
+        return size;
+    }
+
+    // Added a function to get the array elements
+    const int* getElements() const {
+        return elements;
+    }
+
+private:
+    void resize() {
+        capacity *= 2;
+        int* newElements = new int[capacity];
+        for (int i = 0; i < size; ++i) {
+            newElements[i] = elements[i];
+        }
+        delete[] elements;
+        elements = newElements;
+    }
+
+    void heapifyDown(int index) {
+        int leftChild = 2 * index + 1;
+        int rightChild = 2 * index + 2;
+        int largest = index;
+
+        if (leftChild < size && elements[leftChild] > elements[largest]) {
+            largest = leftChild;
+        }
+
+        if (rightChild < size && elements[rightChild] > elements[largest]) {
+            largest = rightChild;
+        }
+
+        if (largest != index) {
+            swap(elements[index], elements[largest]);
+            heapifyDown(largest);
+        }
+    }
+};
 
 int main() {
     ifstream infile("data.txt");
@@ -11,26 +104,25 @@ int main() {
         return 1;
     }
 
-    priority_queue<int> priorityQueue;
+    MaxHeap maxHeap;
 
     int n;
     while (infile >> n) {
         if (n == 0) {
-            if (!priorityQueue.empty()) {
-                int largest = priorityQueue.top();
+            if (!maxHeap.empty()) {
+                int largest = maxHeap.top();
                 cout << largest << " popped" << endl;
-                priorityQueue.pop();
+                maxHeap.pop();
 
-                // Print the new queue
-                priority_queue<int> newQueue = priorityQueue;
-                while (!newQueue.empty()) {
-                    cout << newQueue.top() << " ";
-                    newQueue.pop();
+                // Print the new heap
+                const int* heapElements = maxHeap.getElements();
+                for (int i = 0; i < maxHeap.getSize(); ++i) {
+                    cout << heapElements[i] << " ";
                 }
                 cout << endl;
             }
         } else {
-            priorityQueue.push(n);
+            maxHeap.push(n);
         }
     }
 
