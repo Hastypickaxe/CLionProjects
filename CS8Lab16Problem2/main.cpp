@@ -1,36 +1,66 @@
 #include <iostream>
 #include <fstream>
-#include <vector>
-#include <algorithm>
 
 using namespace std;
 
-const int MAX_SIZE = 100;
+class SortedArray {
+private:
+    int* elements;
+    int size;
+    int capacity;
 
-void insertSorted(vector<int> &sortedArray, int n) {
-    if (sortedArray.size() >= MAX_SIZE) {
-        cout << "Priority queue is full. Cannot insert " << n << endl;
-        return;
+public:
+    SortedArray(int initialCapacity = 100) {
+        capacity = initialCapacity;
+        elements = new int[capacity];
+        size = 0;
     }
 
-    int index = lower_bound(sortedArray.begin(), sortedArray.end(), n) - sortedArray.begin();
-    sortedArray.insert(sortedArray.begin() + index, n);
-}
-
-void deleteMax(vector<int> &sortedArray) {
-    if (!sortedArray.empty()) {
-        int largest = sortedArray.back();
-        sortedArray.pop_back();
-        cout << largest << " popped" << endl;
-    } else {
-        cout << "Priority queue is empty. Cannot delete." << endl;
+    ~SortedArray() {
+        delete[] elements;
     }
 
-    for (int num : sortedArray) {
-        cout << num << " ";
+    void insert(int value) {
+        if (size == capacity) {
+            cout << "Array is full. Cannot insert more elements." << endl;
+            return;
+        }
+
+        int i = size - 1;
+        while (i >= 0 && elements[i] > value) {
+            elements[i + 1] = elements[i];
+            i--;
+        }
+
+        elements[i + 1] = value;
+        size++;
     }
-    cout << endl;
-}
+
+    void removeTop() {
+        if (size > 0) {
+            cout << elements[size - 1] << " removed" << endl;
+            size--;
+        } else {
+            cout << "Array is empty. Cannot remove elements." << endl;
+        }
+    }
+
+    bool empty() const {
+        return size == 0;
+    }
+
+    int top() const {
+        return size > 0 ? elements[size - 1] : -1; // Assuming -1 as an invalid value for an empty array
+    }
+
+    int getSize() const {
+        return size;
+    }
+
+    const int* getElements() const {
+        return elements;
+    }
+};
 
 int main() {
     ifstream infile("data.txt");
@@ -39,14 +69,23 @@ int main() {
         return 1;
     }
 
-    vector<int> priorityQueue;
+    SortedArray sortedArray;
 
     int n;
     while (infile >> n) {
         if (n == 0) {
-            deleteMax(priorityQueue);
+            if (!sortedArray.empty()) {
+                sortedArray.removeTop();
+
+                // Print the new array
+                const int* arrayElements = sortedArray.getElements();
+                for (int i = 0; i < sortedArray.getSize(); ++i) {
+                    cout << arrayElements[i] << " ";
+                }
+                cout << endl;
+            }
         } else {
-            insertSorted(priorityQueue, n);
+            sortedArray.insert(n);
         }
     }
 
