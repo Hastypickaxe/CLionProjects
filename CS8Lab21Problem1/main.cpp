@@ -2,11 +2,10 @@
 #include <fstream>
 #include <vector>
 #include <queue>
-#include <limits>
 
 using namespace std;
 
-const int INF = numeric_limits<int>::max();
+const int INF = 1e9; // A large constant to represent infinity
 
 // Structure to represent a vertex and its distance from the source
 struct Node {
