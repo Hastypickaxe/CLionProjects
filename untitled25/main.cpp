@@ -1,227 +1,231 @@
 #include <iostream>
 using namespace std;
 
-const int MAX = 4;
+const int MAX_KEYS = 4;
 
-class BTreeNode
-{
-private:
-    int data[MAX];                   // Static array to store keys
-    BTreeNode *childPtr[MAX + 1];    // Pointers to child nodes
-    bool leaf;                       // Indicates whether the node is a leaf
-    int count;                       // Number of keys in the node
-
+// Class representing a node in the B-tree
+class BTreeNode {
 public:
-    BTreeNode()
-    {
-        // Constructor to initialize the node
-        for (int i = 0; i <= MAX; i++)
-        {
-            data[i] = 0;             // Initialize keys to 0
-            childPtr[i] = nullptr;   // Initialize child pointers to null
+    int *keys;                    // Array to store keys
+    BTreeNode **child_pointers;   // Array to store pointers to child nodes
+    bool is_leaf;                 // Flag to indicate if the node is a leaf
+    int key_count;                // Number of keys currently in the node
+
+    BTreeNode() {
+        keys = new int[MAX_KEYS];                    // Allocate memory for keys
+        child_pointers = new BTreeNode*[MAX_KEYS + 1];  // Allocate memory for child pointers
+        is_leaf = true;                              // Initialize as leaf node
+        key_count = 0;                               // Initialize key count
+
+        for (int i = 0; i < MAX_KEYS + 1; i++) {
+            child_pointers[i] = nullptr;            // Initialize child pointers to null
         }
-        childPtr[MAX] = nullptr;      // Initialize the last child pointer to null
-        leaf = true;                  // By default, a newly created node is a leaf
-        count = 0;                    // Initialize the number of keys to 0
     }
 
-
-    friend class BTree;
+    ~BTreeNode() {
+        delete[] keys;                               // Free memory for keys
+        delete[] child_pointers;                     // Free memory for child pointers
+    }
 };
 
-class BTree
-{
+// Class representing the B-tree itself
+class BTree {
 private:
-    BTreeNode *root;                  // Pointer to the root of the B-tree
-    void insertNonFull(BTreeNode *x, int k);  // Helper function for insertion
-    void splitChild(BTreeNode *x, int i, BTreeNode *y);  // Helper function for splitting a child
-    void printBTree(BTreeNode *root, int depth);
+    BTreeNode *root;          // Pointer to the root node of the tree
+    BTreeNode *new_node;      // Pointer to a new node during node splitting
+    BTreeNode *current_node;  // Pointer to the current node during tree traversal
 
 public:
-    BTree()
-    {
-        // Constructor to initialize the B-tree
-        root = nullptr;                // Initially, the tree is empty
+    BTree() : root(nullptr), new_node(nullptr), current_node(nullptr) {}
+
+    // Function to get the root of the tree
+    BTreeNode* getRoot() {
+        return root;
     }
 
-    void insert(int key);                // Function to insert a key into the B-tree
-    void constructBTree();            // Function to construct the B-tree by taking user input
-    void printTree();                  // Function to print the entire B-tree
-};
-
-void BTree::insert(int key)
-{
-    // Function to insert a key into the B-tree
-    if (root == nullptr)
-    {
-        // If the tree is empty, create a new root node
-        root = new BTreeNode;
-        root->data[0] = key;
-        root->count = 1;
+    // Destructor to delete the entire tree
+    ~BTree() {
+        delete_tree(root);
     }
-    else
-    {
-        if (root->count == MAX)
-        {
-            // If the root is full, create a new root and split the old root
-            BTreeNode *newRoot = new BTreeNode;
-            newRoot->childPtr[0] = root;
-            splitChild(newRoot, 0, root);
-            root = newRoot;
-        }
-        else
-        {
-            insertNonFull(root, key);
+
+    // Recursive function to delete the tree
+    void delete_tree(BTreeNode *node) {
+        if (node) {
+            if (!node->is_leaf) {
+                for (int i = 0; i < node->key_count + 1; i++) {
+                    delete_tree(node->child_pointers[i]);
+                }
+            }
+            delete node;
         }
     }
-}
 
-void BTree::insertNonFull(BTreeNode *x, int k)
-{
-    // Helper function to insert a key into a non-full node
-    int i = x->count - 1;
-
-    if (x->leaf)
-    {
-        // if x is a leaf node, insert k into x
-        // this works only when x is not full
-        // If the node is a leaf, insert the key in sorted order
-        while (i >= 0 && k < x->data[i])
-        {
-            x->data[i + 1] = x->data[i];
-            i--;
-        }
-        x->data[i + 1] = k;
-        x->count++;
+    // Function to initialize a new node
+    BTreeNode *initialize_node() {
+        new_node = new BTreeNode();
+        return new_node;
     }
-    else
-    {
-        // If the node is not a leaf, find the child to insert into
-        while (i >= 0 && k < x->data[i])
-        {
-            i--;
+
+    // Function to traverse the tree and print its contents
+    void traverse(BTreeNode *node) {
+        cout << endl;
+
+        for (int i = 0; i < node->key_count; i++) {
+            if (!node->is_leaf) {
+                traverse(node->child_pointers[i]);
+            }
+            cout << " " << node->keys[i];
         }
-        i++;
-        if (x->childPtr[i]->count == MAX)
-        {
-            // If the child is full, split it
-            splitChild(x, i, x->childPtr[i]);
-            if (k > x->data[i])
-            {
-                i++;
+
+        if (!node->is_leaf) {
+            traverse(node->child_pointers[node->key_count]);
+        }
+
+        cout << endl;
+    }
+
+    // Function to sort an array of keys
+    void sort(int *arr, int n) {
+        for (int i = 0; i < n; i++) {
+            for (int j = i; j < n; j++) {
+                if (arr[i] > arr[j]) {
+                    swap(arr[i], arr[j]);
+                }
             }
         }
-        // Recursively insert into the appropriate child
-        insertNonFull(x->childPtr[i], k);
-    }
-}
-
-void BTree::splitChild(BTreeNode *parent, int index, BTreeNode *child)
-{
-    // Helper function to split a full child of a node
-    BTreeNode *newChild = new BTreeNode;
-    newChild->leaf = child->leaf;
-    newChild->count = MAX / 2;
-
-    for (int i = 0; i < MAX / 2; i++)
-    {
-        // Move the second half of keys from child to newChild
-        int newIndex = i + MAX / 2;
-        newChild->data[i] = child->data[newIndex];
     }
 
-    // Uncomment the following block if you have non-leaf nodes
-    /*
-    if (!child->leaf)
-    {
-        for (int i = 0; i < MAX / 2; i++)
-        {
-            // Move the second half of child pointers from child to newChild
-            int newIndex = i + MAX / 2;
-            newChild->childPtr[i] = child->childPtr[newIndex];
-        }
-    }
-    */
+    // Function to split a child node during insertion
+    int split_child(BTreeNode *current_node, int index) {
+        int j, mid;
+        BTreeNode *new_node, *temp_node, *child_node;
 
-    child->count = MAX / 2;
+        temp_node = initialize_node();
+        temp_node->is_leaf = true;
 
-    for (int i = parent->count; i > index; i--)
-    {
-        // Adjust child pointers in the parent node
-        parent->childPtr[i + 1] = parent->childPtr[i];
-    }
+        if (index == -1) {
+            mid = current_node->keys[MAX_KEYS / 2];
+            current_node->keys[MAX_KEYS / 2] = 0;
+            current_node->key_count--;
 
-    parent->childPtr[index + 1] = newChild;
+            new_node = initialize_node();
+            new_node->is_leaf = false;
+            current_node->is_leaf = true;
 
-    for (int i = parent->count - 1; i >= index; i--)
-    {
-        // Move the median key from child to the parent node
-        parent->data[i + 1] = parent->data[i];
-    }
+            for (j = MAX_KEYS / 2 + 1; j < MAX_KEYS; j++) {
+                temp_node->keys[j - (MAX_KEYS / 2 + 1)] = current_node->keys[j];
+                temp_node->child_pointers[j - (MAX_KEYS / 2 + 1)] = current_node->child_pointers[j];
+                temp_node->key_count++;
+                current_node->keys[j] = 0;
+                current_node->key_count--;
+            }
 
-    parent->data[index] = child->data[MAX / 2];
-    parent->count++;
-}
+            for (j = 0; j < MAX_KEYS + 1; j++) {
+                current_node->child_pointers[j] = nullptr;
+            }
 
+            new_node->keys[0] = mid;
+            new_node->child_pointers[new_node->key_count] = temp_node;
+            new_node->child_pointers[new_node->key_count + 1] = current_node;
+            new_node->key_count++;
+            root = new_node;
+        } else {
+            child_node = current_node->child_pointers[index];
+            mid = child_node->keys[MAX_KEYS / 2];
+            child_node->keys[MAX_KEYS / 2] = 0;
+            child_node->key_count--;
 
-void BTree::constructBTree()
-{
-    // Function to construct the B-tree by taking user input
-    int n;
-    cout << "Enter the number of elements: ";
-    cin >> n;
+            for (j = MAX_KEYS / 2 + 1; j < MAX_KEYS; j++) {
+                temp_node->keys[j - (MAX_KEYS / 2 + 1)] = child_node->keys[j];
+                temp_node->key_count++;
+                child_node->keys[j] = 0;
+                child_node->key_count--;
+            }
 
-    for (int i = 0; i < n; i++)
-    {
-        int element;
-        cout << "Enter the element " << i + 1 << " : ";
-        cin >> element;
-        insert(element);
-    }
-}
+            current_node->key_count++;
+            for (j = current_node->key_count - 1; j > index; j--) {
+                current_node->keys[j] = current_node->keys[j - 1];
+                current_node->child_pointers[j + 1] = current_node->child_pointers[j];
+            }
 
-void BTree::printBTree(BTreeNode *root, int depth)
-{
-    if (root == nullptr)
-    {
-        return;
-    }
-
-    for (int i = root->count - 1; i >= 0; i--)
-    {
-        printBTree(root->childPtr[i + 1], depth + 1);
-
-        for (int j = 0; j < depth; j++)
-        {
-            cout << "    ";
+            current_node->keys[index] = mid;
+            current_node->child_pointers[index + 1] = temp_node;
         }
 
-        cout << root->data[i];
-        if (i > 0)
-        {
-            cout << " ";
-        }
-        else
-        {
-            cout << endl;
-        }
+        return mid;
     }
 
-    printBTree(root->childPtr[0], depth + 1);
-}
 
-void BTree::printTree()
-{
-    // Function to print the entire B-tree
-    constructBTree();  // Call constructBTree before printing
+    // Function to insert a key into the B-tree
+    void insert(int key) {
+        int index, temp;
+        current_node = root;
 
-    cout << "Constructed B-tree:" << endl;
-    printBTree(root, 0);
-    cout << endl;
-}
-int main()
-{
+        if (current_node == nullptr) {
+            root = initialize_node();
+            current_node = root;
+        } else {
+            if (current_node->is_leaf && current_node->key_count == MAX_KEYS) {
+                temp = split_child(current_node, -1);
+
+                // Create a new root
+                BTreeNode* new_root = initialize_node();
+                new_root->is_leaf = false;
+                new_root->child_pointers[0] = root;
+                new_root->keys[0] = temp;
+                new_root->child_pointers[1] = new_node;
+                new_root->key_count = 1;
+                root = new_root;
+
+                current_node = root->child_pointers[0];
+            }
+
+            while (!current_node->is_leaf) {
+                for (index = 0; index < current_node->key_count; index++) {
+                    if ((key > current_node->keys[index]) && (key < current_node->keys[index + 1])) {
+                        index++;
+                        break;
+                    } else if (key < current_node->keys[0]) {
+                        break;
+                    } else {
+                        continue;
+                    }
+                }
+
+                if (current_node->child_pointers[index]->key_count == MAX_KEYS) {
+                    temp = split_child(current_node, index);
+                    current_node->keys[current_node->key_count] = temp;
+                    current_node->key_count++;
+                    sort(current_node->keys, current_node->key_count);
+                    continue;
+                } else {
+                    current_node = current_node->child_pointers[index];
+                }
+            }
+        }
+
+        current_node->keys[current_node->key_count] = key;
+        current_node->key_count++;
+        sort(current_node->keys, current_node->key_count);
+    }
+};
+
+// Main function for testing the B-tree
+int main() {
+    int index, num_elements, input_key;
+    cout << "Enter the number of elements to be inserted: ";
+    cin >> num_elements;
+
     BTree btree;
-    btree.printTree();
+
+    for (index = 0; index < num_elements; index++) {
+        cout << "Enter element #" << index << ": ";
+        cin >> input_key;
+        btree.insert(input_key);
+    }
+
+    cout << "Constructed B-Tree\n";
+    btree.traverse(btree.getRoot());
+
     return 0;
 }

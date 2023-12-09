@@ -28,7 +28,6 @@ void printAllPaths(int start, int destination, stack<int>& path, vector<int>& di
         path.pop();
     }
 
-//    cout << start;
 
     while (!reversedPath.empty()) {
         cout << " -> " << reversedPath.front();
